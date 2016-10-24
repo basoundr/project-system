@@ -5,8 +5,12 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
 {
     internal class DesignTimeBuildLogger : ILogger
     {
-        public DesignTimeBuildLogger()
+        private DesignTimeBuildLoggerProvider _loggerProvider;
+        private IEventSource _eventSource;
+        
+        public DesignTimeBuildLogger(DesignTimeBuildLoggerProvider designTimeBuildLoggerProvider)
         {
+            this._loggerProvider = designTimeBuildLoggerProvider;
         }
 
         public String Parameters
@@ -33,6 +37,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
 
         public void Initialize(IEventSource eventSource)
         {
+            this._eventSource = eventSource;
             eventSource.AnyEventRaised += this.AnyEventRaisedHandler;
         }
 
@@ -40,21 +45,32 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
         {
             BuildErrorEventArgs buildError;
             BuildWarningEventArgs buildWarning;
+            BuildStartedEventArgs buildStarted;
 
+            if ((buildStarted = args as BuildStartedEventArgs) != null)
+            {
+                _loggerProvider.DesignTimeBuildErrorsTableDataSource.RemoveAllEntries();
+            }
             if ((buildError = args as BuildErrorEventArgs) != null)
             {
-                this.consoleLogger.ErrorHandler(null, buildError);
+                var tableEntry = DesignTimeBuildErrorTableEntry.CreateEntry(
+                    _loggerProvider.DesignTimeBuildErrorsTableDataSource,
+                    buildError);
+                _loggerProvider.DesignTimeBuildErrorsTableDataSource.AddEntry(tableEntry);
             }
             else if ((buildWarning = args as BuildWarningEventArgs) != null)
             {
-                this.consoleLogger.WarningHandler(null, buildWarning);
+                var tableEntry = DesignTimeBuildErrorTableEntry.CreateEntry(
+                    _loggerProvider.DesignTimeBuildErrorsTableDataSource,
+                    buildWarning);
+                _loggerProvider.DesignTimeBuildErrorsTableDataSource.AddEntry(tableEntry);
             }
 
         }
 
         public void Shutdown()
         {
-            throw new NotImplementedException();
+            _eventSource.AnyEventRaised -= this.AnyEventRaisedHandler;
         }
     }
 }

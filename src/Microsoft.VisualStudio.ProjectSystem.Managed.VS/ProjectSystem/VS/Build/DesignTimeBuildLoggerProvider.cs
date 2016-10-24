@@ -10,6 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.VisualStudio.ProjectSystem.Build;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell.TableManager;
 
 namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
 {
@@ -17,15 +19,57 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
     [Export(typeof(IBuildLoggerProviderAsync))]
     internal class DesignTimeBuildLoggerProvider : IBuildLoggerProviderAsync
     {
-        public async Task<IImmutableSet<ILogger>> GetLoggersAsync(IReadOnlyList<String> targets, IImmutableDictionary<String, String> properties, CancellationToken cancellationToken)
+
+        [ImportingConstructor]
+        public DesignTimeBuildLoggerProvider(
+            UnconfiguredProject unconfiguredProject,
+            ITableManagerProvider tableManagerProvider)
+        {
+            this.UnconfiguredProject = unconfiguredProject;
+            this.VsHierarchies = new OrderPrecedenceImportCollection<IVsHierarchy>(
+                projectCapabilityCheckProvider: unconfiguredProject);
+            this.ProjectGuidServices = new OrderPrecedenceImportCollection<IProjectGuidService>(
+                projectCapabilityCheckProvider: unconfiguredProject);
+
+            var tableManager = tableManagerProvider.GetTableManager(StandardTables.ErrorsTable);
+            var tableSource = new DesignTimeBuildErrorsTableDataSource(
+                this.VsHierarchies.First().Value,
+                this.ProjectGuidServices.First().Value.ProjectGuid,
+                this.UnconfiguredProject.FullPath);
+            tableManager.AddSource(tableSource, DesignTimeBuildErrorTableEntry.SupportedColumnNames);
+            this.DesignTimeBuildErrorsTableDataSource = tableSource;
+        }
+        
+        public DesignTimeBuildErrorsTableDataSource DesignTimeBuildErrorsTableDataSource
+        {
+            get;
+        }
+
+        [ImportMany]
+        public OrderPrecedenceImportCollection<IProjectGuidService> ProjectGuidServices
+        {
+            get;
+        }
+
+        [ImportMany]
+        public OrderPrecedenceImportCollection<IVsHierarchy> VsHierarchies
+        {
+            get;
+        }
+        public UnconfiguredProject UnconfiguredProject
+        {
+            get;
+        }
+
+        public Task<IImmutableSet<ILogger>> GetLoggersAsync(IReadOnlyList<String> targets, IImmutableDictionary<String, String> properties, CancellationToken cancellationToken)
         {
             var loggers = ImmutableHashSet<ILogger>.Empty;
 
             // Connect an MSBuild logger to the output window pane.
-            var logger = new DesignTimeBuildLogger();
+            var logger = new DesignTimeBuildLogger(this);
             loggers = loggers.Add(logger);
 
-            return loggers;
+            return Task.FromResult((IImmutableSet<ILogger>)loggers);
         }
     }
 }

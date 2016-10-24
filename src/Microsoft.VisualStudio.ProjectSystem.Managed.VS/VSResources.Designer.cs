@@ -166,6 +166,15 @@ namespace Microsoft.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Design time build errors..
+        /// </summary>
+        internal static string DesignTimeBuildErrors {
+            get {
+                return ResourceManager.GetString("DesignTimeBuildErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to _Discard.
         /// </summary>
         internal static string Discard {
