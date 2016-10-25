@@ -39,6 +39,8 @@
             Condition="'$(IsCrossTargetingBuild)' != 'true'"
           >
 
+		<Warning Text="Hello!" />
+
       <ItemGroup>
         <_CompilerCommandLineArgs Include="@(CscCommandLineArgs)"/>
       </ItemGroup>

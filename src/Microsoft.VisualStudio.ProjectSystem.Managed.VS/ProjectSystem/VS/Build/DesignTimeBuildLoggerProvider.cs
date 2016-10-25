@@ -33,8 +33,8 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
 
             var tableManager = tableManagerProvider.GetTableManager(StandardTables.ErrorsTable);
             var tableSource = new DesignTimeBuildErrorsTableDataSource(
-                this.VsHierarchies.First().Value,
-                this.ProjectGuidServices.First().Value.ProjectGuid,
+                null,
+                Guid.Empty,
                 this.UnconfiguredProject.FullPath);
             tableManager.AddSource(tableSource, DesignTimeBuildErrorTableEntry.SupportedColumnNames);
             this.DesignTimeBuildErrorsTableDataSource = tableSource;

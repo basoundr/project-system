@@ -20,13 +20,11 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
                 StandardTableColumnDefinitions.Text,
                 StandardTableColumnDefinitions.ErrorSeverity);
 
-        private LazyFormattedBuildEventArgs _eventArgs;
         private ImmutableDictionary<String, Object> _properties;
 
-        public DesignTimeBuildErrorTableEntry(ImmutableDictionary<String, Object> properties, LazyFormattedBuildEventArgs eventArgs)
+        public DesignTimeBuildErrorTableEntry(ImmutableDictionary<String, Object> properties)
         {
             this._properties = properties;
-            this._eventArgs = eventArgs;
         }
 
         public Object Identity
@@ -64,10 +62,10 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
             properties.Add(StandardTableColumnDefinitions.ProjectName, designTimeBuildErrorsTableDataSource.ProjectPath);
             properties.Add(StandardTableColumnDefinitions.Text, buildErrorArgs.Message);
             properties.Add(StandardTableColumnDefinitions.ErrorSeverity, __VSERRORCATEGORY.EC_ERROR);
-            properties.Add("project", designTimeBuildErrorsTableDataSource.Hierarchy);
-            properties.Add("projectguid", designTimeBuildErrorsTableDataSource.ProjectGuid);
+            //properties.Add("project", designTimeBuildErrorsTableDataSource.Hierarchy);
+            //properties.Add("projectguid", designTimeBuildErrorsTableDataSource.ProjectGuid);
 
-            return new DesignTimeBuildErrorTableEntry(properties.ToImmutableDictionary(), buildErrorArgs);
+            return new DesignTimeBuildErrorTableEntry(properties.ToImmutableDictionary());
         }
 
         internal static ITableEntry CreateEntry(DesignTimeBuildErrorsTableDataSource designTimeBuildErrorsTableDataSource, BuildWarningEventArgs buildWarningArgs)
@@ -77,10 +75,10 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
             properties.Add(StandardTableColumnDefinitions.ProjectName, designTimeBuildErrorsTableDataSource.ProjectPath);
             properties.Add(StandardTableColumnDefinitions.Text, buildWarningArgs.Message);
             properties.Add(StandardTableColumnDefinitions.ErrorSeverity, __VSERRORCATEGORY.EC_WARNING);
-            properties.Add("project", designTimeBuildErrorsTableDataSource.Hierarchy);
-            properties.Add("projectguid", designTimeBuildErrorsTableDataSource.ProjectGuid);
+            //properties.Add("project", designTimeBuildErrorsTableDataSource.Hierarchy);
+            //properties.Add("projectguid", designTimeBuildErrorsTableDataSource.ProjectGuid);
 
-            return new DesignTimeBuildErrorTableEntry(properties.ToImmutableDictionary(), buildWarningArgs);
+            return new DesignTimeBuildErrorTableEntry(properties.ToImmutableDictionary());
         }
     }
 }
