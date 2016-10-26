@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
             var properties = new Dictionary<string, object>();
             properties.Add(StandardTableColumnDefinitions.ErrorSource, ErrorSource.Other);
             properties.Add(StandardTableColumnDefinitions.ProjectName, designTimeBuildErrorsTableDataSource.ProjectPath);
-            properties.Add(StandardTableColumnDefinitions.Text, buildErrorArgs.Message);
+            properties.Add(StandardTableColumnDefinitions.Text, buildErrorArgs.Message + "Balaji");
             properties.Add(StandardTableColumnDefinitions.ErrorSeverity, __VSERRORCATEGORY.EC_ERROR);
             //properties.Add("project", designTimeBuildErrorsTableDataSource.Hierarchy);
             //properties.Add("projectguid", designTimeBuildErrorsTableDataSource.ProjectGuid);
@@ -73,7 +73,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Build
             var properties = new Dictionary<string, object>();
             properties.Add(StandardTableColumnDefinitions.ErrorSource, ErrorSource.Other);
             properties.Add(StandardTableColumnDefinitions.ProjectName, designTimeBuildErrorsTableDataSource.ProjectPath);
-            properties.Add(StandardTableColumnDefinitions.Text, buildWarningArgs.Message);
+            properties.Add(StandardTableColumnDefinitions.Text, buildWarningArgs.Message + "Balaji");
             properties.Add(StandardTableColumnDefinitions.ErrorSeverity, __VSERRORCATEGORY.EC_WARNING);
             //properties.Add("project", designTimeBuildErrorsTableDataSource.Hierarchy);
             //properties.Add("projectguid", designTimeBuildErrorsTableDataSource.ProjectGuid);
