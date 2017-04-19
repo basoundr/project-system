@@ -26,6 +26,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Automation
         private readonly IProjectLockService _lockService;
         private readonly VSLangProj.VSProject _vsProject;
         private readonly IUnconfiguredProjectVsServices _unconfiguredProjectVSServices;
+        private readonly IUserNotificationServices _userNotificationService;
         private readonly VisualBasicNamespaceImportsList _importsList;
 
         public event _dispImportsEvents_ImportAddedEventHandler ImportAdded;
@@ -38,6 +39,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Automation
             ActiveConfiguredProject<ConfiguredProject> activeConfiguredProject,
             IProjectLockService lockService,
             IUnconfiguredProjectVsServices unconfiguredProjectVSServices,
+            IUserNotificationServices userNotificationService,
             VisualBasicNamespaceImportsList importsList)
         {
             Requires.NotNull(vsProject, nameof(vsProject));
@@ -45,6 +47,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Automation
             Requires.NotNull(activeConfiguredProject, nameof(activeConfiguredProject));
             Requires.NotNull(lockService, nameof(lockService));
             Requires.NotNull(unconfiguredProjectVSServices, nameof(unconfiguredProjectVSServices));
+            Requires.NotNull(userNotificationService, nameof(userNotificationService));
             Requires.NotNull(importsList, nameof(importsList));
 
             _vsProject = vsProject;
@@ -52,6 +55,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Automation
             _lockService = lockService;
             _threadingService = threadingService;
             _unconfiguredProjectVSServices = unconfiguredProjectVSServices;
+            _userNotificationService = userNotificationService;
             _importsList = importsList;
 
             AddEventSource(this);
@@ -93,6 +97,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Automation
             if (intIndexPresent || stringIndexPresent)
             {
                 string importRemoved = null;
+                var removed = false;
                 _threadingService.ExecuteSynchronously(async () =>
                 {
                     using (var access = await _lockService.WriteLockAsync())
@@ -117,17 +122,28 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.Automation
                             System.Diagnostics.Debug.Assert(false, $"Parameter {nameof(index)} is niether an int nor a string");
                         }
 
-                        if (importProjectItem.IsImported)
-                        {
-                            throw new ArgumentException(string.Format(VisualBasicVSResources.ImportsFromTargetCannotBeDeleted, index.ToString()), nameof(index));
-                        }
-
                         importRemoved = importProjectItem.EvaluatedInclude;
-                        project.RemoveItem(importProjectItem);
+                        if (!importProjectItem.IsImported)
+                        {
+                            project.RemoveItem(importProjectItem);
+                            removed = true;
+                        }
+                    }
+
+                    if (!removed)
+                    {
+                        _threadingService.ExecuteSynchronously(async () =>
+                        {
+                            await _threadingService.SwitchToUIThread();
+                            _userNotificationService.NotifyFailure(string.Format(VisualBasicVSResources.ImportsFromTargetCannotBeDeleted, importRemoved));
+                        });
                     }
                 });
 
-                OnImportRemoved(importRemoved);
+                if (removed)
+                {
+                    OnImportRemoved(importRemoved);
+                }
             }
             else if (index is string)
             {
