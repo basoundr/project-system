@@ -45,6 +45,16 @@ namespace Microsoft.VisualStudio.ProjectSystem.LanguageServices
         }
 
         /// <summary>
+        ///    Gets the task that completes when initialization has completed. It does *not*
+        ///    guarantee that initialization has even begun, and does not Join the initialization
+        ///    effort.
+        /// </summary>
+        Task InitializationCompletionTask
+        {
+            get;
+        }
+
+        /// <summary>
         ///     Initializes the langauge service host.
         /// </summary>
         /// <param name="cancellationToken"></param>
