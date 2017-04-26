@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.VisualStudio.IO;
 using Microsoft.VisualStudio.ProjectSystem.LanguageServices;
 
 namespace Microsoft.VisualStudio.ProjectSystem.VS.LanguageServices
@@ -17,24 +17,28 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.LanguageServices
     {
         private readonly ActiveConfiguredProject<ProjectProperties> _activeConfiguredProjectProperties;
         private readonly ILanguageServiceHost _languageServiceHost;
+        private readonly IFileSystem _fileSystem;
 
         [ImportingConstructor]
         public VisualBasicRuntimeReferencesProvider(
             ActiveConfiguredProject<ProjectProperties> activeConfiguredProjectProperties,
-            IUnconfiguredProjectCommonServices projectServices,
-            ILanguageServiceHost languageServiceHost)
+            IUnconfiguredProjectVsServices projectServices,
+            ILanguageServiceHost languageServiceHost,
+            IFileSystem fileSystem)
             : base(projectServices.ThreadingService.JoinableTaskContext)
         {
             Requires.NotNull(activeConfiguredProjectProperties, nameof(activeConfiguredProjectProperties));
             Requires.NotNull(languageServiceHost, nameof(languageServiceHost));
+            Requires.NotNull(fileSystem, nameof(fileSystem));
 
             _activeConfiguredProjectProperties = activeConfiguredProjectProperties;
             _languageServiceHost = languageServiceHost;
+            _fileSystem = fileSystem;
         }
 
         [ProjectAutoLoad(startAfter: ProjectLoadCheckpoint.ProjectFactoryCompleted)]
         [AppliesTo(ProjectCapability.VisualBasic)]
-        internal Task Load()
+        public Task Load()
         {
             return InitializeAsync();
         }
@@ -62,7 +66,7 @@ namespace Microsoft.VisualStudio.ProjectSystem.VS.LanguageServices
         private async Task AddMetadataReferenceAsync(string sdkPath, string assemblyName)
         {
             var assemblyPath = PathHelper.Combine(sdkPath, assemblyName);
-            if (File.Exists(assemblyPath))
+            if (_fileSystem.FileExists(assemblyPath))
             {
                 await _languageServiceHost.InitializationCompletionTask.ContinueWith(
                     t => _languageServiceHost.ActiveProjectContext.AddMetadataReference(assemblyPath, MetadataReferenceProperties.Assembly), TaskScheduler.Default);
