@@ -52,6 +52,7 @@ namespace TestProj
         {
             var value = args[0];
             var path = System.Reflection.Assembly.GetEntryAssembly().Location;
+            Console.WriteLine(path);
         }
     }
 }");
@@ -73,7 +74,7 @@ namespace TestProj
 
             VisualStudio.Workspace.WaitForAsyncOperations(FeatureAttribute.Workspace);
 
-            VisualStudio.Debugger.SetBreakPoint(fileName, "}");
+            VisualStudio.Debugger.SetBreakPoint(fileName, "Console.WriteLine(path);");
             VisualStudio.Debugger.Go(waitForBreakMode: true);
 
             VisualStudio.LocalsWindow.Verify.CheckEntry("value", "String", "ProfileOne");
