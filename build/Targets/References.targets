@@ -213,4 +213,17 @@
     </When>
   </Choose>
 
+  <Target Name="MarkNuGetVisualStudioPackageWithEmbedInteropType" Condition="'$(UseLocalRoslynForIntegrationTests)' == 'true'" AfterTargets="ResolveNuGetPackageAssets">
+    <ItemGroup>
+      <_NuGetVisualStudioPackageReference Include="@(Reference)" Condition="'%(Reference.NuGetPackageId)' == 'NuGet.VisualStudio'" />
+    </ItemGroup>
+    <Error Condition="'@(_NuGetVisualStudioPackageReference)' == ''" Text="Could not find NuGet.VisualStudio package to add EmbedInteropTypes to." />
+    <ItemGroup>
+      <Reference Remove="@(_NuGetVisualStudioPackageReference)" />
+      <Reference Include="@(_NuGetVisualStudioPackageReference)">
+        <EmbedInteropTypes>True</EmbedInteropTypes>
+      </Reference>
+    </ItemGroup>
+  </Target>
+
 </Project>
